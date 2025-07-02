@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biblioteca de Músicas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #1e1e1e, #2c2c2c);
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #ff4b4b;
+    }
+    #search {
+      padding: 10px;
+      width: 80%;
+      max-width: 400px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+    }
+    table {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      border-collapse: collapse;
+      background-color: #333;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #555;
+    }
+    th {
+      background-color: #444;
+      color: #ff4b4b;
+    }
+    tr:hover {
+      background-color: #555;
+    }
+    .paginacao {
+      margin-top: 20px;
+    }
+    .paginacao button {
+      padding: 10px 15px;
+      margin: 0 5px;
+      border: none;
+      border-radius: 5px;
+      background-color: #ff4b4b;
+      color: white;
+      cursor: pointer;
+    }
+    .paginacao button:disabled {
+      background-color: #777;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎵 Biblioteca de Músicas</h1>
+  <input type="text" id="search" placeholder="Pesquisar por nome, artista ou gênero...">
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Artista</th>
+        <th>Gênero</th>
+        <th>Nota</th>
+      </tr>
+    </thead>
+    <tbody id="musicTable"></tbody>
+  </table>
+  <div class="paginacao">
+    <button id="prev">Anterior</button>
+    <span id="pageInfo"></span>
+    <button id="next">Próxima</button>
+  </div>
+
+  <script>
+    const musicas = [
+      { nome: "Magnolia", artista: "Playboi Carti", genero: "Hip-Hop", nota: 9.8 },
+      { nome: "Long Time", artista: "Playboi Carti", genero: "Hip-Hop", nota: 9.9 },
+      { nome: "Charge Dem Hoes a Fee", artista: "Playboi Carti feat Future & Travis Scott", genero: "Hip-Hop", nota: 9.9 },
+      { nome: "POP OUT", artista: "Playboi Carti", genero: "Hip-Hop", nota: 7.9 },
+      { nome: "SICKO MODE", artista: "Travis Scott", genero: "Hip-Hop", nota: 9.5 },
+      { nome: "goosebumps", artista: "Travis Scott", genero: "Hip-Hop", nota: 9.3 },
+      { nome: "Stargazing", artista: "Travis Scott", genero: "Hip-Hop", nota: 8 },
+      { nome: "HIGHEST IN THE ROOM", artista: "Travis Scott", genero: "Hip-Hop", nota: 9 },
+      { nome: "Can't Say", artista: "Travis Scott & Don Toliver", genero: "Hip-Hop", nota: 10 },
+      { nome: "Sky", artista: "Playboi Carti", genero: "Hip-Hop", nota: 9.9 },
+      { nome: "Mask Off", artista: "Future", genero: "Hip-Hop", nota: 9.4 },
+      { nome: "Aye", artista: "Lil Uzi Vert & Travis Scott", genero: "Hip-Hop", nota: 9.6 },
+      { nome: "FE!N", artista: "Travis Scott & Playboi Carti", genero: "Hip-Hop", nota: 10 },
+      { nome: "Heartless", artista: "Kanye West", genero: "R&B/Hip-Hop", nota: 9.6 },
+      { nome: "If We Being Real", artista: "Yeat", genero: "Hip-Hop", nota: 9.3 },
+      { nome: "Open It Up", artista: "Migos", genero: "Hip-Hop", nota: 9.4 },
+      { nome: "Thinkin Bout You", artista: "Frank Ocean", genero: "R&B", nota: 9.5 },
+      { nome: "No Pole", artista: "Don Toliver", genero: "Hip-Hop & Pop", nota: 9.7 },
+      { nome: "Hard 2 Face Reality", artista: "Justin Bieber", genero: "Pop", nota: 7.8 }
+    ].sort((a, b) => b.nota - a.nota);
+
+    const tabela = document.getElementById("musicTable");
+    const search = document.getElementById("search");
+    const prev = document.getElementById("prev");
+    const next = document.getElementById("next");
+    const pageInfo = document.getElementById("pageInfo");
+
+    let paginaAtual = 1;
+    const itensPorPagina = 10;
+
+    function exibirMusicas(filtro = "") {
+      const termo = filtro.toLowerCase();
+      const filtradas = musicas.filter(m =>
+        m.nome.toLowerCase().includes(termo) ||
+        m.artista.toLowerCase().includes(termo) ||
+        m.genero.toLowerCase().includes(termo)
+      );
+
+      const totalPaginas = Math.ceil(filtradas.length / itensPorPagina);
+      if (paginaAtual > totalPaginas) paginaAtual = totalPaginas || 1;
+
+      tabela.innerHTML = "";
+      const inicio = (paginaAtual - 1) * itensPorPagina;
+      const fim = inicio + itensPorPagina;
+
+      filtradas.slice(inicio, fim).forEach(m => {
+        const row = `<tr>
+          <td>${m.nome}</td>
+          <td>${m.artista}</td>
+          <td>${m.genero}</td>
+          <td>${m.nota}</td>
+        </tr>`;
+        tabela.innerHTML += row;
+      });
+
+      pageInfo.textContent = `Página ${paginaAtual} de ${totalPaginas || 1}`;
+      prev.disabled = paginaAtual === 1;
+      next.disabled = paginaAtual === totalPaginas || totalPaginas === 0;
+    }
+
+    search.addEventListener("input", e => {
+      paginaAtual = 1;
+      exibirMusicas(e.target.value);
+    });
+
+    prev.addEventListener("click", () => {
+      if (paginaAtual > 1) {
+        paginaAtual--;
+        exibirMusicas(search.value);
+      }
+    });
+
+    next.addEventListener("click", () => {
+      const termo = search.value.toLowerCase();
+      const filtradas = musicas.filter(m =>
+        m.nome.toLowerCase().includes(termo) ||
+        m.artista.toLowerCase().includes(termo) ||
+        m.genero.toLowerCase().includes(termo)
+      );
+      const totalPaginas = Math.ceil(filtradas.length / itensPorPagina);
+      if (paginaAtual < totalPaginas) {
+        paginaAtual++;
+        exibirMusicas(search.value);
+      }
+    });
+
+    exibirMusicas();
+  </script>
+</body>
+</html>
